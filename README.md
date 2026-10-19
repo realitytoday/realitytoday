@@ -4,6 +4,8 @@ For years we watched AI get better and better. Today it has arrived in our every
 
 Reality Today is a collection of projects, ideas and blueprints that came out of this new way of building: from a first idea to a working product, with AI as a real partner in the process. Here you’ll find what I built, how it works, and the architecture and prompts behind it, so you can build it yourself.
 
+What you find here are recent projects or renewals of old projects which were realized using artificial intelligence in a few days or weekends, often in the evening after work.
+
 <!--
 **realitytoday/realitytoday** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
