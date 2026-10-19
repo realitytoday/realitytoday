@@ -1,4 +1,8 @@
-## Hi there 👋
+## It is reality
+
+For years we watched AI get better and better. Today it has arrived in our everyday life as developers. It isn’t a vision of the future anymore, it’s reality today.
+
+Reality Today is a collection of projects, ideas and blueprints that came out of this new way of building: from a first idea to a working product, with AI as a real partner in the process. Here you’ll find what I built, how it works, and the architecture and prompts behind it, so you can build it yourself.
 
 <!--
 **realitytoday/realitytoday** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
