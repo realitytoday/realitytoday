@@ -6,6 +6,8 @@ Reality Today is a collection of projects, ideas and blueprints that came out of
 
 What you find here are recent projects or renewals of old projects which were realized using artificial intelligence in a few days or weekends, often in the evening after work.
 
+In the repos you will find information and prompts you can provide to Anthropic Claude, GitHub Copilot, JetBrains Junie, Mistral Vibe, ... and build your own instance from it. Why? Since I strongly believe this will be the new reality or the new normal.
+
 <!--
 **realitytoday/realitytoday** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
