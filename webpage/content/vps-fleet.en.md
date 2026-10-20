@@ -37,6 +37,7 @@ a version tuned to your own servers.
 - **File manager:** local and remote side by side, upload and download with progress, view,
   delete, chmod, chown, chgrp.
 - **Profiles:** separate server lists for work, home or customers.
+- **Add servers in the app:** a form with validation, no file editing needed.
 
 ## The decisions that matter
 
@@ -90,8 +91,10 @@ go build -o vps-fleet.exe ./cmd/vps-fleet
 .\vps-fleet.exe
 ```
 
-On first start it creates an example config in `~/.config/vps-fleet/`. Add your servers there.
-Prefer SSH keys over the `password` field, which is stored as plain text.
+Add your servers from inside the app: press `a` (or open the config screen with `c` and choose
+"+ Add a server"), fill in name, host, user, port and key file, and press `ctrl+s`. The server connects
+right away. You can also edit `~/.config/vps-fleet/config.yaml` by hand. Prefer SSH keys over the
+`password` field, which is stored as plain text.
 
 ## What is not finished
 

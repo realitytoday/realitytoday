@@ -60,6 +60,7 @@ a version tuned to your own servers.</p>
 <li><strong>File manager:</strong> local and remote side by side, upload and download with progress, view,
   delete, chmod, chown, chgrp.</li>
 <li><strong>Profiles:</strong> separate server lists for work, home or customers.</li>
+<li><strong>Add servers in the app:</strong> a form with validation, no file editing needed.</li>
 </ul>
 <h2>The decisions that matter</h2>
 <p><strong>Agentless.</strong> If you can <code>ssh</code> into a server, it can be managed: no daemon, no exporter, no
@@ -99,8 +100,10 @@ go build -o vps-fleet ./cmd/vps-fleet
 <pre><code class="language-powershell">go build -o vps-fleet.exe ./cmd/vps-fleet
 .\vps-fleet.exe
 </code></pre>
-<p>On first start it creates an example config in <code>~/.config/vps-fleet/</code>. Add your servers there.
-Prefer SSH keys over the <code>password</code> field, which is stored as plain text.</p>
+<p>Add your servers from inside the app: press <code>a</code> (or open the config screen with <code>c</code> and choose
+"+ Add a server"), fill in name, host, user, port and key file, and press <code>ctrl+s</code>. The server connects
+right away. You can also edit <code>~/.config/vps-fleet/config.yaml</code> by hand. Prefer SSH keys over the
+<code>password</code> field, which is stored as plain text.</p>
 <h2>What is not finished</h2>
 <p>The command runner runs single commands, so it is not a full interactive terminal and programs
 like <code>vim</code> or <code>htop</code> do not work in it. Copying whole folders in the file manager is not built,

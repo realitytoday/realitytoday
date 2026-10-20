@@ -61,6 +61,7 @@ Version bauen lassen, die zu deinen eigenen Servern passt.</p>
 <li><strong>Dateimanager:</strong> lokal und Server nebeneinander, Hoch- und Herunterladen mit Fortschritt, Ansehen,
   Löschen, chmod, chown, chgrp.</li>
 <li><strong>Profile:</strong> getrennte Serverlisten für Arbeit, Zuhause oder Kunden.</li>
+<li><strong>Server in der App hinzufügen:</strong> ein Formular mit Prüfung, kein Bearbeiten von Dateien nötig.</li>
 </ul>
 <h2>Die Entscheidungen, auf die es ankommt</h2>
 <p><strong>Agentenlos.</strong> Wenn du dich per <code>ssh</code> einloggen kannst, lässt sich der Server verwalten: kein Daemon,
@@ -101,8 +102,10 @@ go build -o vps-fleet ./cmd/vps-fleet
 <pre><code class="language-powershell">go build -o vps-fleet.exe ./cmd/vps-fleet
 .\vps-fleet.exe
 </code></pre>
-<p>Beim ersten Start legt es eine Beispielkonfiguration in <code>~/.config/vps-fleet/</code> an. Trage dort deine
-Server ein. Nimm lieber SSH-Schlüssel als das Feld <code>password</code>, das im Klartext gespeichert wird.</p>
+<p>Neue Server fügst du direkt in der App hinzu: Drücke <code>a</code> (oder öffne mit <code>c</code> die Konfiguration und wähle
+"+ Add a server"), trage Name, Host, Benutzer, Port und Schlüsseldatei ein und drücke <code>ctrl+s</code>. Der Server
+verbindet sich sofort. Du kannst auch <code>~/.config/vps-fleet/config.yaml</code> von Hand bearbeiten. Nimm lieber
+SSH-Schlüssel als das Feld <code>password</code>, das im Klartext gespeichert wird.</p>
 <h2>Was noch fehlt</h2>
 <p>Der Befehls-Runner führt einzelne Befehle aus, ist also kein vollwertiges interaktives Terminal; Programme
 wie <code>vim</code> oder <code>htop</code> laufen darin nicht. Ganze Ordner kopieren kann der Dateimanager noch nicht, und ein
