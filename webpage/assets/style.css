@@ -65,3 +65,5 @@ footer.site a{color:var(--muted)}
 .card.guide .body{padding-top:20px}
 .card .thumb.term{container-type:inline-size;align-items:center;justify-content:flex-start;padding:18px}
 .card .thumb.term pre{margin:0;padding:0;background:none;color:#cfe9ff;font-size:min(.9rem,4cqi);line-height:1.5;overflow:hidden;white-space:pre}
+.cta .btn.alt{color:#fff;border-color:#fff}
+.cta .btn.alt:hover{background:rgba(255,255,255,.12)}
