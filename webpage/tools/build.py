@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Static site builder: python tools/build.py  (run from anywhere).
 Reads content/*.md, writes HTML next to them (index.html, de/, projects/...)."""
-import re, html
+import re, html, json
 from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
 BLUEPRINT = "https://github.com/realitytoday/home-information-screen-blueprint"
 GITHUB = "https://github.com/realitytoday"
+BASE = "https://www.reality-today.de/"
+SOCIAL_IMG = BASE + "assets/img/social-preview.jpg"
 VF_BLUEPRINT = "https://github.com/realitytoday/vps-fleet"
 VF_CODE = "https://github.com/realitytoday/vps-fleet-tui"
 def _vf_preview():
@@ -68,9 +70,10 @@ L = {
   llm_tags=["Claude Opus","Mistral Vibe","Agent tips"], llm_note="Not every model can do the same. Read which AI model and agent to use before you start.",
   vf_t="VPS Fleet", vf_p="Your whole server fleet in one terminal window: health, processes, services and files for all your servers over plain SSH, with nothing installed on them. The prompts plus the finished Go code.",
   vf_tags=["Go","SSH","Terminal UI","AI agents"], vf_path="projects/vps-fleet/",
-  vf_desc="A keyboard-driven terminal cockpit for a fleet of Linux servers over plain SSH. Build it with an AI coding agent from the prompts, or use the finished Go code.",
+  vf_desc="A keyboard-driven terminal cockpit for a fleet of Linux servers over plain SSH. Build it with an AI agent from the prompts, or use the finished Go code.",
   vf_cta_h="Get the blueprint and the code", vf_cta_p="The prompts, architecture, key map and lessons learned are in the blueprint repo; the finished Go implementation is in the code repo.",
-  vf_cta_b="Blueprint on GitHub", vf_code_b="Code on GitHub",
+  vf_cta_b="vps-fleet blueprint on GitHub", vf_code_b="vps-fleet Go code on GitHub",
+  vf_title="vps-fleet: Manage a Server Fleet from One Terminal", related_h="More projects and guides",
   llm_h="Guide", contact="Contact", license="Content: CC BY 4.0 unless stated otherwise in the repos.", aria="Language"),
  "de": dict(
   lang="de", home="/de/", other="/", other_label="EN", projects="Projekte", about="Ansatz",
@@ -96,17 +99,40 @@ L = {
   llm_tags=["Claude Opus","Mistral Vibe","Agent-Tipps"], llm_note="Nicht jedes Modell kann dasselbe. Lies vor dem Start, welches KI-Modell und welcher Agent geeignet ist.",
   vf_t="VPS Fleet", vf_p="Die ganze Server-Flotte in einem Terminalfenster: Zustand, Prozesse, Dienste und Dateien aller Server über normales SSH, ohne etwas auf ihnen zu installieren. Die Prompts und dazu der fertige Go-Code.",
   vf_tags=["Go","SSH","Terminal-UI","KI-Agenten"], vf_path="projekte/vps-fleet/",
-  vf_desc="Ein tastaturgesteuertes Terminal-Cockpit für eine Flotte von Linux-Servern über normales SSH. Mit einem KI-Coding-Agenten aus den Prompts bauen oder den fertigen Go-Code nutzen.",
+  vf_desc="Tastaturgesteuertes Terminal-Cockpit für eine Flotte von Linux-Servern über normales SSH. Mit KI-Agent aus den Prompts bauen oder fertigen Go-Code nutzen.",
   vf_cta_h="Bauplan und Code holen", vf_cta_p="Prompts, Architektur, Tastenbelegung und Lessons Learned liegen im Blueprint-Repo, die fertige Go-Implementierung im Code-Repo.",
-  vf_cta_b="Blueprint auf GitHub", vf_code_b="Code auf GitHub",
+  vf_cta_b="vps-fleet-Blueprint auf GitHub", vf_code_b="vps-fleet-Go-Code auf GitHub",
+  vf_title="vps-fleet: Server-Flotte im Terminal verwalten", related_h="Weitere Projekte und Anleitungen",
   llm_h="Anleitung", contact="Kontakt", license="Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.", aria="Sprache"),
 }
 
 def rel(depth): return "../" * depth if depth else "./"
 
-def layout(lang, depth, title, desc, body, alt_path, path):
+def layout(lang, depth, title, desc, body, alt_path, path, canon=None, alt_canon=None, og_type="website", ld=None, noindex=False):
     t = L[lang]; r = rel(depth)
     other = "en" if lang == "de" else "de"
+    seo = ""
+    if noindex:
+        seo = '<meta name="robots" content="noindex">\n'
+    elif canon is not None:
+        en_url = BASE + (canon if lang == "en" else alt_canon)
+        de_url = BASE + (canon if lang == "de" else alt_canon)
+        seo = (f'<link rel="canonical" href="{BASE + canon}">\n'
+               f'<link rel="alternate" hreflang="en" href="{en_url}">\n'
+               f'<link rel="alternate" hreflang="de" href="{de_url}">\n'
+               f'<link rel="alternate" hreflang="x-default" href="{en_url}">\n')
+    page_url = BASE + canon if canon is not None else BASE
+    og = (f'<meta property="og:type" content="{og_type}">\n'
+          f'<meta property="og:site_name" content="Reality Today">\n'
+          f'<meta property="og:locale" content="{"de_DE" if lang == "de" else "en_US"}">\n'
+          f'<meta property="og:locale:alternate" content="{"en_US" if lang == "de" else "de_DE"}">\n'
+          f'<meta property="og:url" content="{page_url}">\n'
+          f'<meta property="og:title" content="{html.escape(title)}">\n'
+          f'<meta property="og:description" content="{html.escape(desc)}">\n'
+          f'<meta property="og:image" content="{SOCIAL_IMG}">\n'
+          f'<meta property="og:image:alt" content="{html.escape(t["title"])}">\n'
+          '<meta name="twitter:card" content="summary_large_image">\n')
+    ld_tag = ('<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + '</script>\n') if ld else ""
     # alt_path: path of the other-language page relative to site root
     return f"""<!doctype html>
 <html lang="{t['lang']}">
@@ -116,12 +142,7 @@ def layout(lang, depth, title, desc, body, alt_path, path):
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(desc)}">
 <meta name="color-scheme" content="light dark">
-<meta property="og:title" content="{html.escape(title)}">
-<meta property="og:description" content="{html.escape(desc)}">
-<meta property="og:type" content="website">
-<meta property="og:image" content="https://reality-today.de/assets/img/social-preview.jpg">
-<link rel="alternate" hreflang="{other}" href="{r}{alt_path}">
-<link rel="icon" type="image/png" href="{r}assets/favicon.png">
+{seo}{og}{ld_tag}<link rel="icon" type="image/png" href="{r}assets/favicon.png">
 <link rel="apple-touch-icon" href="{r}assets/apple-touch-icon.png">
 <link rel="stylesheet" href="{r}assets/style.css">
 </head>
@@ -174,7 +195,11 @@ def home(lang):
 <div class="principles">{''.join(f'<div><b>{a}</b>{b}</div>' for a,b in t['principles'])}</div>
 </div></section>"""
     alt = "" if lang == "de" else "de/"
-    return layout(lang, depth, t["title"], t["desc"], body, alt if alt else "./", "")
+    canon, alt_canon = ("", "de/") if lang == "en" else ("de/", "")
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "WebSite", "name": "Reality Today", "url": BASE, "inLanguage": lang, "description": t["desc"]},
+        {"@type": "Organization", "name": "Reality Today", "url": BASE, "logo": BASE + "assets/img/logo.png", "sameAs": [GITHUB]}]}
+    return layout(lang, depth, t["title"], t["desc"], body, alt if alt else "./", "", canon, alt_canon, "website", ld)
 
 def md_to_html(text):
     md = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists"])
@@ -224,6 +249,9 @@ def guide(key, lang):
         cta = f'<div class="cta"><h2>{t["vf_cta_h"]}</h2><p>{t["vf_cta_p"]}</p><a class="btn" href="{VF_BLUEPRINT}">{t["vf_cta_b"]}</a> <a class="btn alt" href="{VF_CODE}">{t["vf_code_b"]}</a></div>'
     else:
         cta = (f'<div class="cta"><h2>{t["cta_h"]}</h2><p>{t["cta_p"]}</p><a class="btn" href="{BLUEPRINT}">{t["cta_b"]}</a></div>' if g["cta"] else "")
+    names = {"his": t["card_t"], "vf": t["vf_t"], "llm": t["llm_t"]}
+    items = "".join(f'<li><a href="{r}{GUIDES[k][lang]}">{names[k]}</a></li>' for k in GUIDES if k != key)
+    related = f'<section class="related"><h2>{t["related_h"]}</h2><ul>{items}</ul></section>'
     body = f"""<div class="wrap narrow"><article>
 <p><a href="{r}{'de/' if lang=='de' else ''}#projects">← {t['home_b']}</a> · <a href="{other_href}" hreflang="{other}">{t['other_page']}</a></p>
 <h1>{html.escape(title)}</h1>
@@ -231,9 +259,21 @@ def guide(key, lang):
 {note}{shots}
 {body_html}
 {cta}
+{related}
 </article></div>"""
     plain = re.sub(r"<[^>]+>", "", title)
-    return layout(lang, depth, f"{plain} – Reality Today", t[g["desc"]], body, g[other], "")
+    tag_title = f"{t['vf_title']} | Reality Today" if key == "vf" else f"{plain} – Reality Today"
+    home_url = BASE + ("de/" if lang == "de" else "")
+    page_url = BASE + path
+    item = {"@type": "SoftwareSourceCode", "name": "vps-fleet", "programmingLanguage": "Go", "codeRepository": VF_CODE} if key == "vf" \
+        else {"@type": "TechArticle", "headline": plain}
+    item.update({"description": t[g["desc"]], "inLanguage": lang, "url": page_url, "image": SOCIAL_IMG,
+                 "author": {"@type": "Organization", "name": "Reality Today", "url": BASE}})
+    ld = {"@context": "https://schema.org", "@graph": [item, {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Reality Today", "item": home_url},
+        {"@type": "ListItem", "position": 2, "name": t["projects"], "item": home_url + "#projects"},
+        {"@type": "ListItem", "position": 3, "name": plain, "item": page_url}]}]}
+    return layout(lang, depth, tag_title, t[g["desc"]], body, g[other], "", path, g[other], "article", ld)
 
 def local_links(content):
     """Point folder links at their index.html, so the pages also work opened from disk (file://),
@@ -255,7 +295,22 @@ for _k, _g in GUIDES.items():
     for _l in ("en", "de"):
         write(_g[_l] + "index.html", guide(_k, _l))
 write("404.html", layout("en", 0, "Not found – Reality Today", "Page not found",
-  '<div class="wrap narrow hero"><h1>404</h1><p class="lead">This page does not exist. <a href="/">Back to the start</a> · <a href="/de/">Zur Startseite</a></p></div>', "de/", ""))
+  '<div class="wrap narrow hero"><h1>404</h1><p class="lead">This page does not exist. <a href="/">Back to the start</a> · <a href="/de/">Zur Startseite</a></p></div>', "de/", "", noindex=True))
 
 p = ROOT / "404.html"
 p.write_text(p.read_text(encoding="utf-8").replace('"./assets/', '"/assets/').replace('href="./"', 'href="/"'), encoding="utf-8")
+
+# --- sitemap.xml and robots.txt (canonical host)
+pairs = [("", "de/")] + [(g["en"], g["de"]) for g in GUIDES.values()]
+urls = []
+for en_p, de_p in pairs:
+    alts = (f'<xhtml:link rel="alternate" hreflang="en" href="{BASE}{en_p}"/>'
+            f'<xhtml:link rel="alternate" hreflang="de" href="{BASE}{de_p}"/>'
+            f'<xhtml:link rel="alternate" hreflang="x-default" href="{BASE}{en_p}"/>')
+    for loc in (en_p, de_p):
+        urls.append(f"<url><loc>{BASE}{loc}</loc>{alts}</url>")
+(ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+    + "\n".join(urls) + "\n</urlset>\n", encoding="utf-8")
+(ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n", encoding="utf-8")
+(ROOT / "CNAME").write_text("www.reality-today.de\n", encoding="utf-8")
+print("wrote sitemap.xml, robots.txt, CNAME")
