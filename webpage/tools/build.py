@@ -10,7 +10,36 @@ BLUEPRINT = "https://github.com/realitytoday/home-information-screen-blueprint"
 GITHUB = "https://github.com/realitytoday"
 VF_BLUEPRINT = "https://github.com/realitytoday/vps-fleet"
 VF_CODE = "https://github.com/realitytoday/vps-fleet-tui"
-VF_PREVIEW = "  vps-fleet v0.1.0 · default      2 servers · 2 online\n  NAME     STATUS    CPU        MEM        DISK\n ▌web-1    ● online  ████░ 82%  █████ 97%  █░░░░ 23%\n  db-1     ● online  █░░░░ 12%  ██░░░ 41%  ███░░ 60%"
+def _vf_preview():
+    """Terminal preview for the vps-fleet card, coloured like the real TUI (Lip Gloss palette)."""
+    def sp(text, color, bold=False):
+        st = f"color:{color}" + (";font-weight:700" if bold else "")
+        return f'<span style="{st}">{html.escape(text)}</span>'
+    def mix(a, b, t):
+        pa = [int(a[i:i+2], 16) for i in (1, 3, 5)]; pb = [int(b[i:i+2], 16) for i in (1, 3, 5)]
+        return "#" + "".join(f"{round(x + (y - x) * t):02x}" for x, y in zip(pa, pb))
+    def bar(pct, n=4):
+        filled = round(pct / 100 * n)
+        out = ""
+        for i in range(n):
+            if i < filled:
+                out += sp("█", mix("#5A56E0", "#EE6FF8", i / max(1, n - 1)))
+            else:
+                out += sp("░", "#4e5a85")
+        return out
+    def pct(v):
+        return sp(f"{v:>3}%", "#ff5f5f" if v >= 90 else "#cfe9ff")
+    CY, LIME, GREEN, GRAY = "#00d7ff", "#d7ff00", "#00ff00", "#8c97c2"
+    rows = [("▌web-1", LIME, True, "● online", GREEN, 82, 97), (" db-1 ", "#cfe9ff", False, "● online", GREEN, 12, 41),
+            (" vpn-1", "#cfe9ff", False, "● online", GREEN, 8, 23)]
+    out = [sp("vps-fleet v0.1.0", CY, True) + sp(" · default", GRAY), "",
+           sp("NAME      STATUS    CPU       MEM", CY, True)]
+    for name, nc, nb, st, sc, cpu, mem in rows:
+        out.append(sp(f"{name:<10}", nc, nb) + sp(f"{st:<10}", sc) + bar(cpu) + pct(cpu) + "  " + bar(mem) + pct(mem))
+    out += ["", sp("enter", LIME) + sp(" dash  ", GRAY) + sp("t", LIME) + sp(" top  ", GRAY) + sp("s", LIME) + sp(" ssh  ", GRAY) + sp("f", LIME) + sp(" files", GRAY)]
+    return "\n".join(out)
+
+VF_PREVIEW = _vf_preview()
 SHOTS = ["screen-idle", "screen-calendar", "screen-order-dialog", "screen-weather",
          "screen-tasks", "screen-orders", "screen-sensors", "screen-notes"]
 
@@ -134,7 +163,7 @@ def home(lang):
 <div class="grid">
 <a class="card" href="{proj}"><div class="thumb">{thumbs}</div><div class="body">
 <h3>{t['card_t']}</h3><p>{t['card_p']}</p><div class="tags">{tags}</div></div></a>
-<a class="card" href="{vf_href}"><div class="thumb term"><pre>{html.escape(VF_PREVIEW)}</pre></div><div class="body">
+<a class="card" href="{vf_href}"><div class="thumb term"><pre>{VF_PREVIEW}</pre></div><div class="body">
 <h3>{t['vf_t']}</h3><p>{t['vf_p']}</p><div class="tags">{vf_tags}</div></div></a>
 <a class="card guide" href="{llm_href}"><div class="body" style="border-top:6px solid var(--pink)">
 <h3>{t['llm_t']}</h3><p>{t['llm_p']}</p><div class="tags">{''.join(f"<span>{x}</span>" for x in t['llm_tags'])}</div></div></a>
