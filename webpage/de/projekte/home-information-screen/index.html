@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ein ruhiges Wand-Dashboard für die Familie: Home Information Screen mit Raspberry Pi – Reality Today</title>
+<meta name="description" content="Ein ruhiges Wand-Dashboard mit Raspberry Pi, Touchscreen und KI-Coding-Agent bauen. Bauplan und Prompts, kein Code zum Herunterladen.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Ein ruhiges Wand-Dashboard für die Familie: Home Information Screen mit Raspberry Pi – Reality Today">
+<meta property="og:description" content="Ein ruhiges Wand-Dashboard mit Raspberry Pi, Touchscreen und KI-Coding-Agent bauen. Bauplan und Prompts, kein Code zum Herunterladen.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://reality-today.de/assets/img/social-preview.jpg">
+<link rel="alternate" hreflang="en" href="../../../projects/home-information-screen/">
+<link rel="icon" type="image/png" href="../../../assets/favicon.png">
+<link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../../de/"><img src="../../../assets/img/logo.png" alt="" width="40" height="40"><span>Reality Today</span></a>
+<nav class="site" aria-label="Main">
+<a href="../../../de/#projects">Projekte</a>
+<a class="hide-s" href="../../../de/#approach">Ansatz</a>
+<a class="hide-s" href="https://github.com/realitytoday">GitHub</a>
+<a class="lang" href="../../../projects/home-information-screen/" hreflang="en" lang="en" aria-label="Sprache">EN</a>
+</nav></div></header>
+<main>
+<div class="wrap narrow"><article>
+<p><a href="../../../de/#projects">← Alle Projekte</a> · <a href="../../../projects/home-information-screen/" hreflang="en">English version of this guide</a></p>
+<h1>Ein ruhiges Wand-Dashboard für die Familie: Home Information Screen mit Raspberry Pi</h1>
+<p class="sub">Gebaut mit einem KI-Coding-Agenten. Kein Code zum Herunterladen, sondern ein Bauplan und die Prompts dazu.</p>
+<div class="shots" role="group" aria-label="Screenshots"><img src="../../../assets/img/screen-idle.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-calendar.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-order-dialog.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-weather.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-tasks.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-orders.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-sensors.webp" alt="" loading="lazy" width="270" height="480"><img src="../../../assets/img/screen-notes.webp" alt="" loading="lazy" width="270" height="480"></div>
+<p class="sub" style="font-size:.9rem">Bildschirme des fertigen Dashboards. Alle Namen, Termine und Notizen sind erfundene Demodaten.</p>
+<h2>Einleitung</h2>
+<p>Unsere Termine lebten in fünf Apps, und keine wurde im richtigen Moment
+geöffnet. Also hängt jetzt ein Bildschirm im Flur. Er zeigt den gemeinsamen
+Kalender, das Wetter, wer zu Hause ist, wer heute mit dem Abwasch dran ist, ob im
+Keller etwas ausläuft, und eine Wand voller Notizzettel ("bin gegen 19 Uhr
+zurück"). Er wacht auf, wenn jemand vorbeigeht, und wird dunkel, wenn niemand da ist.</p>
+<p>Ich habe ihn in etwa drei Wochen mit KI-Agenten gebaut. Diese Anleitung gibt dir
+nicht meinen Code. Dein Kalenderserver, dein Router und dein Haushalt sind anders
+als meine. Sie gibt dir deshalb das, was sich besser übertragen lässt: die
+Architektur, die Design-Regeln, die Verkabelung, meine Fehler und die Prompts, mit
+denen ich jedes Teil gebaut habe.</p>
+<p><strong>Zeit:</strong> ein paar Abende Hardware plus Agent-Sitzungen für die Software.
+<strong>Niveau:</strong> Terminal und Docker sollten vertraut sein. Den Code schreibt der Agent.
+<strong>Kosten:</strong> etwa ein Pi 4, ein Touchscreen und ein PIR-Sensor, dazu ein Server, den
+du vermutlich schon hast.</p>
+<h2>Material</h2>
+<ul>
+<li>Full-HD-Touchscreen ab 14" mit USB-Touch, im Hochformat montiert</li>
+<li>Raspberry Pi 4B (4 GB) mit Raspberry Pi OS Trixie (64 Bit)</li>
+<li>PIR-Bewegungsmelder (HC-SR501 o. ä.), drei Buchse-Buchse-Jumperkabel</li>
+<li>Ein dauerhaft laufender Rechner mit Docker: NAS, Mini-PC oder alter Laptop</li>
+<li>HDMI- und USB-Kabel, 20 bis 30 cm</li>
+<li>Optional: 3D-Drucker (ASA), Magnete, dünnes Stahlblech und VHB-Band für die Halterung</li>
+<li>Optional: UniFi-Gateway (Anwesenheit, Leck-Sensoren) und CalDAV-Server</li>
+<li>Ein KI-Coding-Agent deiner Wahl</li>
+</ul>
+<h2>Schritt 1: Die eine große Entscheidung verstehen</h2>
+<p><strong>Der Pi zeigt an, der Server rechnet.</strong></p>
+<p>Der Pi startet nur einen Vollbild-Browser und liest den Bewegungsmelder. Alles, was
+Kalender abfragt, Wetter zwischenspeichert, Notizen ablegt und prüft, wer zu Hause
+ist, läuft in einem kleinen Container auf deinem Server. So kannst du den Pi neu
+aufsetzen, ohne etwas zu verlieren, und er hat neben dem Browser genug Speicher.</p>
+<p>Folgen, die du einplanen musst: Der Bildschirm spricht über dein LAN mit dem Server,
+ein gemeinsamer API-Schlüssel ist das einzige Schloss, und liegen beide Geräte in
+verschiedenen Netzsegmenten, brauchst du Firewall-Regeln für API- <strong>und</strong>
+Webhook-Port.</p>
+<h2>Schritt 2: Festlegen, wofür der Bildschirm da ist</h2>
+<p>Sieben Bildschirme, bedient über eine schwebende Tab-Leiste mit Symbolen:</p>
+<ol>
+<li><strong>Ruhe:</strong> riesige Uhr, Wetter in einer Zeile, wer zu Hause ist.</li>
+<li><strong>Kalender:</strong> die nächsten sieben Tage, groß der nächste Termin, nur lesend.</li>
+<li><strong>Essen:</strong> Restaurant-Kacheln, Zufallswahl, "das Übliche" pro Person.</li>
+<li><strong>Aufgaben:</strong> heutige Aufgaben je Person mit runden Häkchen.</li>
+<li><strong>Wetter:</strong> animierter Himmel, Stundenleiste, Regen gegen Sonnenschein.</li>
+<li><strong>Sensoren:</strong> Türen, Fenster, Lecks, Temperatur, Feuchte.</li>
+<li><strong>Notizen:</strong> verschiebbare Zettel mit Bildschirmtastatur.</li>
+</ol>
+<p>Der Startbildschirm folgt der Uhrzeit: morgens Kalender, mittags Wetter, abends
+Essen, nachts Ruhe. Ein Tippen übersteuert das, bis der Bildschirm schläft.</p>
+<h2>Schritt 3: Hardware montieren und verkabeln</h2>
+<p>Den Bildschirm im Hochformat montieren (90° nach links gedreht). Den Pi im normalen
+Gehäuse kopfüber unter ein Brett hängen, mit Magneten gehalten, damit die SD-Karte
+mit einem Zug erreichbar bleibt.</p>
+<p>PIR an die 40-polige Stiftleiste:</p>
+<table>
+<thead>
+<tr>
+<th>PIR</th>
+<th>Pi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VCC</td>
+<td>Pin 2 (5 V)</td>
+</tr>
+<tr>
+<td>GND</td>
+<td>Pin 6</td>
+</tr>
+<tr>
+<td>OUT</td>
+<td>Pin 12 (GPIO18)</td>
+</tr>
+</tbody>
+</table>
+<p>Tipps: Das Trimmpoti für die Haltezeit auf Minimum stellen und die Regel "fünf
+Minuten ohne Bewegung" in Software lösen. Nach dem Einschalten eine Minute warmlaufen
+lassen. Die Kuppel nie mit Kunststoff abdecken und nicht direkt neben den heißen
+Chip setzen.</p>
+<p><strong>Stromversorgung prüfen.</strong> Ein Pi 4 braucht 5 V bei 3 A. Am USB-Anschluss des
+Monitors bootet er oft und bricht dann unter Last ein. Zeigt sich die
+Unterspannungswarnung, nimm ein richtiges USB-C-Netzteil.</p>
+<h2>Schritt 4: Drehung und Touch einrichten (Wayland, nicht X11)</h2>
+<p>Das aktuelle Raspberry Pi OS nutzt den Wayland-Compositor labwc. Die üblichen
+<code>xrandr</code>- und <code>xinput</code>-Tipps funktionieren deshalb nicht. Die Bildschirmausrichtung
+im Desktop-Bereich "Bildschirme" auf 270 stellen und Touch in
+<code>~/.config/labwc/rc.xml</code> zuordnen:</p>
+<pre><code class="language-xml">&lt;touch deviceName=&quot;vollständiger Gerätename deines Touch-Controllers&quot;
+       mapToOutput=&quot;HDMI-A-1&quot; mouseEmulation=&quot;no&quot;/&gt;
+</code></pre>
+<p>Zwei Fallen:</p>
+<ul>
+<li><code>mouseEmulation</code> muss <code>"no"</code> sein, sonst funktioniert das Wischen überall nicht.</li>
+<li>Der Gerätename enthält den USB-Port-Pfad. Wird das Kabel umgesteckt, ändert er
+  sich und Touch fällt stumm aus.</li>
+</ul>
+<h2>Schritt 5: Regeln festlegen, bevor der Agent eine Zeile schreibt</h2>
+<p>Lege einen kurzen Projekt-Brief (<code>CLAUDE.md</code>) mit den festen Entscheidungen an:
+Architektur, Stack (Go auf dem Server, Svelte am Bildschirm, YAML-Dateien statt
+Datenbank, Polling statt WebSockets), die TLS-Regel (Prüfung nie abschalten) und die
+Design-Regeln. Das Blueprint-Repo enthält eine ausfüllbare Vorlage.</p>
+<p>Ein einseitiger Brief, den der Agent in jeder Sitzung liest, schlägt ein langes Wiki,
+das er ignoriert. Führe außerdem ab sofort ein Entscheidungsprotokoll mit
+datierten Einträgen zu Entscheidungen und jedem Fehler. Es wird die wertvollste Datei
+des Projekts.</p>
+<h2>Schritt 6: Backend mit dem Agenten bauen</h2>
+<p>Gib dem Agenten Prompt 01: ein Go-Server nur mit der Standardbibliothek, ein
+gemeinsamer API-Schlüssel beim ersten Start, eine YAML-Datei je Speicher und ein
+wiederverwendbares Muster für jede Integration: <strong>Cache, veraltete Daten bei Fehlern
+und eine Testdatei als letzte Rückfalloption</strong>. Deshalb ist der Bildschirm nie leer
+und zeigt nie einen rohen Fehler.</p>
+<p>Auf dem echten Gerät prüfen, bevor es weitergeht.</p>
+<h2>Schritt 7: Integrationen einzeln ergänzen</h2>
+<p>Prompt 02 deckt Kalender (den Server wiederkehrende Termine auflösen lassen), Wetter
+(Open-Meteo braucht keinen Schlüssel), Anwesenheit, Webhooks und Sensoren ab. Was mir
+Stunden gespart hat:</p>
+<ul>
+<li>Handy-Anwesenheit über die Clientliste des Routers schlägt Ping, weil ein
+  schlafendes Handy-WLAN Pings ignoriert.</li>
+<li>Alarmsysteme senden Schwellenwert-Ereignisse, keine Messwerte. Den Sensor-Bildschirm
+  für "zu warm" entwerfen, nicht für 23,4 °C.</li>
+<li>Wasserlecks melden nie "behoben". Sie rasten ein, der Quittieren-Knopf gehört auf den
+  Bildschirm selbst.</li>
+<li>TLS-Prüfung nie abschalten. Eine kleine eigene Zertifizierungsstelle anlegen und nur
+  diese eine Wurzel vertrauen.</li>
+</ul>
+<h2>Schritt 8: Den Bildschirm bauen</h2>
+<p>Prompt 03 baut die Oberfläche nach einem Design-System namens Ruhe: keine Karten, keine
+Rahmen, keine transparenten Tönungen, alles rund, Farbe nur für Zustand, Person oder
+Restaurant, eine Palettendatei, große Schrift. Das Display hängt 16 Stunden am Tag
+da und muss aus vier Schritten Entfernung in zwei Sekunden lesbar sein.</p>
+<p>Zwei Details, die ich mag: Notizzettel sind um wenige Grad geneigt, abgeleitet aus
+ihrer ID, sodass die Wand handgesetzt wirkt, ohne bei jedem Neuzeichnen zu zittern.
+Das Wetterdiagramm zeigt Regenwahrscheinlichkeit gegen die echte Sonnenscheindauer.</p>
+<h2>Schritt 9: Schlafen lassen</h2>
+<p>Prompt 04 baut einen kleinen Bewegungs-Dienst: Fünf Minuten keine Bewegung, und die
+Hintergrundbeleuchtung geht aus. Bewegung oder Berührung weckt ihn. Schlafen und
+Aufwachen laufen lokal und funktionieren auch ohne Netzwerk. Das Blueprint-Repo
+enthält meine funktionierende Version (etwa 200 Zeilen Go, dazu systemd-Unit und
+Konfigurationsdatei) unter <code>reference/pi/</code>, damit dein Agent das genaue Verhalten
+vor Augen hat.</p>
+<p>Zum Abschalten <code>wlopm</code> benutzen, <strong>nicht</strong> <code>wlr-randr --off</code>, das den Browser
+abstürzen lässt. Den Browser-Dienst mit <code>Restart=always</code> betreiben und den
+gespeicherten Beendigungsstatus des Browsers beim Start korrigieren, damit nach einem
+Stromausfall keine Wiederherstellungsabfrage erscheint.</p>
+<h2>Schritt 10: Ausliefern</h2>
+<p>Prompt 05: ein mehrstufiges Docker-Image mit Distroless-Laufzeit, auf dem
+Entwicklungsrechner gebaut, in eine Registry geschoben, auf dem Server gezogen. Ein
+Versionsfeld im Health-Endpunkt gleich am Anfang einbauen. Als ein "Redeploy bewirkt
+nichts"-Abend verloren ging, hat genau dieses Feld ein altes Image-Tag aufgedeckt.</p>
+<p>Denk daran: Der Bildschirm zeigt die Seite, die beim Start geladen wurde. Nach einer
+Frontend-Änderung den Kiosk-Dienst neu starten.</p>
+<h2>Schritt 11: Admin-Seite</h2>
+<p>Prompt 06 ergänzt eine laptoptaugliche Seite für Zeitplan, Kalender-Zugang,
+Anwesenheitsgeräte, Personen und Sensoren, damit niemand per SSH eine Farbe oder IP
+ändern muss.</p>
+<h2>Fehlersuche</h2>
+<p>Die Lessons-Learned-Seite des Blueprints listet jeden Fehler samt Symptom, etwa den
+Webhook, der stumm in den Timeout läuft (Firewall), den Container, der keinen
+Raw-ICMP-Socket öffnen kann, und das NAS, das sich selbst gesperrt hat.</p>
+<h2>Was fehlt noch</h2>
+<p>Anmeldung pro Person am Bildschirm (entworfen als NFC-Chip zum Antippen), Aufgaben in
+der Oberfläche bearbeiten, ein Geheimnis-Manager und Tests. Besser, das offen zu
+sagen, als dich etwas verlassen zu lassen, das es nicht gibt.</p>
+<div class="cta"><h2>Den Bauplan holen</h2><p>Architektur, Design-System, Hardware-Notizen, Lessons Learned, alle Prompts und Referenzdateien auf GitHub.</p>
+<a class="btn" href="https://github.com/realitytoday/home-information-screen-blueprint">Auf GitHub öffnen</a></div>
+</article></div>
+</main>
+<footer class="site"><div class="wrap">
+<span>© Reality Today · Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.</span>
+<span><a href="https://github.com/realitytoday">GitHub</a></span>
+</div></footer>
+</body></html>
