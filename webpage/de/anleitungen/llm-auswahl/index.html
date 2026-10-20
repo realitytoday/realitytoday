@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welches KI-Modell und welchen Agenten solltest du nutzen? – Reality Today</title>
+<meta name="description" content="Modellwahl für die Blueprints: warum Opus-Klasse die besten Ergebnisse liefert, wo die Mittelklasse reicht, und Tipps für Mistral Vibe und andere Agenten.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Welches KI-Modell und welchen Agenten solltest du nutzen? – Reality Today">
+<meta property="og:description" content="Modellwahl für die Blueprints: warum Opus-Klasse die besten Ergebnisse liefert, wo die Mittelklasse reicht, und Tipps für Mistral Vibe und andere Agenten.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://reality-today.de/assets/img/social-preview.jpg">
+<link rel="alternate" hreflang="en" href="../../../guides/choosing-an-llm/">
+<link rel="icon" type="image/png" href="../../../assets/favicon.png">
+<link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../../de/"><img src="../../../assets/img/logo.png" alt="" width="40" height="40"><span>Reality Today</span></a>
+<nav class="site" aria-label="Main">
+<a href="../../../de/#projects">Projekte</a>
+<a class="hide-s" href="../../../de/#approach">Ansatz</a>
+<a class="hide-s" href="https://github.com/realitytoday">GitHub</a>
+<a class="lang" href="../../../guides/choosing-an-llm/" hreflang="en" lang="en" aria-label="Sprache">EN</a>
+</nav></div></header>
+<main>
+<div class="wrap narrow"><article>
+<p><a href="../../../de/#projects">← Alle Projekte</a> · <a href="../../../guides/choosing-an-llm/" hreflang="en">English version of this guide</a></p>
+<h1>Welches KI-Modell und welchen Agenten solltest du nutzen?</h1>
+<p class="sub">Praktische Hinweise, um die Blueprints dieser Seite mit einem Coding-Agenten nachzubauen.</p>
+
+<h2>Warum das Modell zählt</h2>
+<p>Die Prompts in meinen Blueprints sind für einen Coding-<strong>Agenten</strong> geschrieben, nicht für ein Chatfenster. Der Agent muss einen Projekt-Brief lesen, Änderungen über mehrere Dateien planen, Befehle ausführen, Fehlermeldungen auswerten und die Regeln des Projekts über eine lange Sitzung im Blick behalten. Genau darin unterscheiden sich Modelle stark. Derselbe Prompt liefert mit einem Modell ein funktionierendes Backend und mit einem anderen ein Durcheinander, das nur plausibel aussieht.</p>
+<p>Modellnamen und Rankings ändern sich alle paar Monate. Diese Seite spricht deshalb von Modellklassen, nicht von Versionen. Prüfe vor dem Start, was aktuell ist.</p>
+<h2>Die kurze Empfehlung</h2>
+<p>Nimm das <strong>stärkste Modell, auf das du Zugriff hast</strong>: Claude Opus oder ein vergleichbares Spitzenmodell eines anderen Anbieters. Setze es dort ein, wo Fehler teuer sind: bei Architektur, Backend und allem, was Hardware, Linux-Desktop-Einstellungen oder Deployment betrifft. Für die wiederkehrenden Teile wie Feinschliff an der Oberfläche, kleine Korrekturen und die Admin-Seite reicht meist ein Modell der mittleren Klasse (Sonnet-Klasse oder ähnlich), das auch günstiger ist. Kleinere oder offene Modelle können ebenfalls funktionieren, aber plane kleinere Arbeitsschritte und mehr Kontrolle ein.</p>
+<p>Eine Faustregel aus eigener Erfahrung, kein Benchmark:</p>
+<table>
+<thead>
+<tr>
+<th>Teil des Home Information Screen</th>
+<th>Was das Modell leisten muss</th>
+<th>Empfohlene Klasse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend und Integrationsmuster (Cache, veraltete Daten, Rückfall)</td>
+<td>Konsistentes Design über viele Dateien, Disziplin bei Vorgaben</td>
+<td>Spitzenklasse</td>
+</tr>
+<tr>
+<td>Integrationen (Kalender-Wiederholungen, Anwesenheit, Webhooks, Sensoren)</td>
+<td>Genaues Lesen von Protokollen und Randfällen</td>
+<td>Spitzen- oder Mittelklasse</td>
+</tr>
+<tr>
+<td>Pi-Einrichtung (Wayland, Touch-Zuordnung, systemd, Hintergrundbeleuchtung)</td>
+<td>Spezielles, versionsabhängiges Linux-Wissen, Fehlersuche anhand von Logs</td>
+<td>Spitzenklasse</td>
+</tr>
+<tr>
+<td>Bildschirm-Oberfläche und Design-System</td>
+<td>Viele kleine Stilregeln gleichzeitig befolgen</td>
+<td>Mittelklasse reicht oft</td>
+</tr>
+<tr>
+<td>Bewegungs- und Schlaf-Dienst</td>
+<td>Kleines Programm, Referenzimplementierung liegt bei</td>
+<td>Mittelklasse</td>
+</tr>
+<tr>
+<td>Docker-Image und Auslieferung</td>
+<td>Bekannte Muster, aber unverzeihlich</td>
+<td>Mittelklasse</td>
+</tr>
+<tr>
+<td>Admin-Seite</td>
+<td>Routine-Formulare und CRUD</td>
+<td>Mittelklasse</td>
+</tr>
+</tbody>
+</table>
+<h2>Tipps für jeden Agenten</h2>
+<ul>
+<li><strong>Führe einen kurzen Projekt-Brief</strong> (<code>CLAUDE.md</code> oder <code>AGENTS.md</code>) mit den festen Entscheidungen: Architektur, Stack, Sicherheits- und Design-Regeln. Das Blueprint enthält eine Vorlage für beide Dateinamen. Eine Seite, die der Agent in jeder Sitzung liest, schlägt ein langes Wiki, das er ignoriert.</li>
+<li><strong>Ein Prompt pro Sitzung oder Aufgabe.</strong> Füge nicht alle Prompts auf einmal ein. Ein Teil fertigstellen, am echten Gerät testen, committen, dann weitermachen.</li>
+<li><strong>Gib dem Agenten die Referenzdateien.</strong> Der Ordner <code>reference/</code> existiert, weil genaue Skripte und Verträge besser sind als Beschreibungen.</li>
+<li><strong>Lass ihn zuerst planen.</strong> Bitte um einen kurzen Plan und lies ihn, bevor Code entsteht. Korrekturen sind dann am billigsten.</li>
+<li><strong>Führe aus und gib die Ausgabe zurück.</strong> Baue, teste und lies Logs selbst oder lass den Agenten das tun, und füge echte Fehlermeldungen ein, statt sie zu beschreiben.</li>
+<li><strong>Committe oft.</strong> Läuft eine Sitzung schief, willst du einen sauberen Punkt zum Zurückkehren haben.</li>
+<li><strong>Führe ein Entscheidungsprotokoll.</strong> Datierte Einträge zu Entscheidungen und Fehlern. Es wird der Kontext, den du einer frischen Sitzung mitgeben kannst.</li>
+<li><strong>Starte lange Sitzungen neu.</strong> Vergisst der Agent Regeln oder wiederholt Fehler, beginne eine neue Sitzung mit Brief und Entscheidungsprotokoll.</li>
+<li><strong>Lass ihn keine Sicherheit aufweichen, damit etwas läuft.</strong> Die Regel des Blueprints lautet: TLS-Prüfung nie abschalten.</li>
+</ul>
+<h2>Tipps für Mistral Vibe und ähnliche Agenten</h2>
+<p>Der Agent von Mistral ist eine gute Wahl, wenn du einen europäischen Anbieter bevorzugst oder dir Optionen offenhalten willst. Ich habe diese Blueprints nicht durchgängig damit getestet. Nimm das Folgende deshalb als sinnvolle Ausgangspunkte und nicht als geprüfte Ergebnisse.</p>
+<ul>
+<li><strong>Prüfe, welche Brief-Datei er liest</strong> (<code>AGENTS.md</code> ist eine verbreitete Konvention) und lege den Projekt-Brief dort ab. Das Blueprint enthält eine <code>AGENTS.md</code>.</li>
+<li><strong>Nutze kleinere Schritte.</strong> Teile jeden Blueprint-Prompt in Teilaufgaben, etwa zuerst "Datenmodell und Speicher", dann "Kalender-Integration". Eine Aufgabe, eine Dateiliste, ein Ziel.</li>
+<li><strong>Nenne Dateien und Stack ausdrücklich.</strong> Schreibe "Go, nur Standardbibliothek, eine YAML-Datei je Speicher" in jede Aufgabe, statt darauf zu vertrauen, dass der Agent es behält.</li>
+<li><strong>Füge das Referenzmaterial ein oder verweise darauf</strong>, wenn das Verhalten exakt sein muss, etwa bei den Pi-Skripten und dem API-Vertrag.</li>
+<li><strong>Lass dir den Plan zeigen und prüfe ihn.</strong> Schwächere Modelle legen häufiger auf Basis einer falschen Annahme los.</li>
+<li><strong>Kontrolliere mehr.</strong> Führe nach jedem Schritt Tests und Build aus und teste an der echten Hardware, bevor es weitergeht.</li>
+<li><strong>Gib die schweren Probleme nach oben.</strong> Hängst du bei Wayland-Drehung, Touch-Zuordnung oder einer systemd-Unit, gib genau dieses Problem einem Spitzenmodell und mach danach mit deinem bevorzugten Agenten weiter.</li>
+<li><strong>Halte den Kontext klein.</strong> Eine frische Sitzung pro Aufgabe, mit Brief und Entscheidungsprotokoll.</li>
+</ul>
+<h2>Wenn etwas schiefgeht</h2>
+<p>Ist das Ergebnis plausibel, aber falsch, liegt es meist an einem von drei Dingen: Die Aufgabe war zu groß, eine Regel aus dem Brief ging verloren, oder dem Modell fehlte Wissen über die konkrete Hardware oder Softwareversion. Mach die Aufgabe kleiner, wiederhole die Regel oder wechsle für diesen Schritt auf ein stärkeres Modell.</p>
+
+</article></div>
+</main>
+<footer class="site"><div class="wrap">
+<span>© Reality Today · Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.</span>
+<span><a href="https://github.com/realitytoday">GitHub</a></span>
+</div></footer>
+</body></html>

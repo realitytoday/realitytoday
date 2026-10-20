@@ -32,7 +32,9 @@ L = {
   cta_h="Get the blueprint", cta_p="Architecture, design system, hardware notes, lessons learned, all prompts and reference files on GitHub.",
   cta_b="Open on GitHub", other_page="Deutsche Version dieser Anleitung", home_b="All projects",
   guide_desc="Build a calm wall dashboard with a Raspberry Pi, a touchscreen and an AI coding agent. A blueprint and the prompts, no code to download.",
-  contact="Contact", license="Content: CC BY 4.0 unless stated otherwise in the repos.", aria="Language"),
+  llm_t="Which AI model and agent?", llm_p="Choosing a model for the blueprints: why Opus-class models give the best results, where mid-tier is enough, and tips for Mistral Vibe and other agents.",
+  llm_tags=["Claude Opus","Mistral Vibe","Agent tips"], llm_note="Not every model can do the same. Read which AI model and agent to use before you start.",
+  llm_h="Guide", contact="Contact", license="Content: CC BY 4.0 unless stated otherwise in the repos.", aria="Language"),
  "de": dict(
   lang="de", home="/de/", other="/", other_label="EN", projects="Projekte", about="Ansatz",
   title="Reality Today – Projekte, Ideen und Blueprints, gebaut mit KI",
@@ -53,7 +55,9 @@ L = {
   cta_h="Den Bauplan holen", cta_p="Architektur, Design-System, Hardware-Notizen, Lessons Learned, alle Prompts und Referenzdateien auf GitHub.",
   cta_b="Auf GitHub öffnen", other_page="English version of this guide", home_b="Alle Projekte",
   guide_desc="Ein ruhiges Wand-Dashboard mit Raspberry Pi, Touchscreen und KI-Coding-Agent bauen. Bauplan und Prompts, kein Code zum Herunterladen.",
-  contact="Kontakt", license="Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.", aria="Sprache"),
+  llm_t="Welches KI-Modell und welcher Agent?", llm_p="Modellwahl für die Blueprints: warum Opus-Klasse die besten Ergebnisse liefert, wo die Mittelklasse reicht, und Tipps für Mistral Vibe und andere Agenten.",
+  llm_tags=["Claude Opus","Mistral Vibe","Agent-Tipps"], llm_note="Nicht jedes Modell kann dasselbe. Lies vor dem Start, welches KI-Modell und welcher Agent geeignet ist.",
+  llm_h="Anleitung", contact="Kontakt", license="Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.", aria="Sprache"),
 }
 
 def rel(depth): return "../" * depth if depth else "./"
@@ -103,6 +107,7 @@ def home(lang):
     proj = f"{r}{t['proj_path']}" if lang == "en" else f"{t['proj_path']}"
     thumbs = "".join(f'<img src="{r}assets/img/{s}.webp" alt="" loading="lazy">' for s in SHOTS[:3])
     tags = "".join(f"<span>{x}</span>" for x in t["tags"])
+    llm_href = (r + "guides/choosing-an-llm/") if lang == "en" else "anleitungen/llm-auswahl/"
     body = f"""<section class="hero"><div class="wrap">
 <h1>{t['h1']}</h1>
 <p class="lead">{t['lead']}</p>
@@ -114,6 +119,8 @@ def home(lang):
 <div class="grid">
 <a class="card" href="{proj}"><div class="thumb">{thumbs}</div><div class="body">
 <h3>{t['card_t']}</h3><p>{t['card_p']}</p><div class="tags">{tags}</div></div></a>
+<a class="card guide" href="{llm_href}"><div class="body" style="border-top:6px solid var(--pink)">
+<h3>{t['llm_t']}</h3><p>{t['llm_p']}</p><div class="tags">{''.join(f"<span>{x}</span>" for x in t['llm_tags'])}</div></div></a>
 <div class="card soon"><div><h3>{t['soon_t']}</h3><p>{t['soon_p']}</p></div></div>
 </div></div></section>
 <section id="approach"><div class="wrap">
@@ -127,11 +134,21 @@ def md_to_html(text):
     md = markdown.Markdown(extensions=["tables", "fenced_code", "sane_lists"])
     return md.convert(text)
 
-def guide(lang):
-    t = L[lang]
-    depth = 3 if lang == "de" else 2
+GUIDES = {
+ "his": {"en": "projects/home-information-screen/", "de": "de/projekte/home-information-screen/",
+         "src": "home-information-screen", "shots": True, "cta": True, "note": True,
+         "desc": "guide_desc", "back": "projects"},
+ "llm": {"en": "guides/choosing-an-llm/", "de": "de/anleitungen/llm-auswahl/",
+         "src": "llm-guidance", "shots": False, "cta": False, "note": False,
+         "desc": "llm_p", "back": "projects"},
+}
+
+def guide(key, lang):
+    t = L[lang]; g = GUIDES[key]
+    path = g[lang]
+    depth = len([x for x in path.split("/") if x])
     r = rel(depth)
-    src = (ROOT / "content" / f"home-information-screen.{lang}.md").read_text(encoding="utf-8")
+    src = (ROOT / "content" / f"{g['src']}.{lang}.md").read_text(encoding="utf-8")
     lines = src.split("\n")
     title = re.sub(r"^#\s+", "", lines[0]).strip()
     sub = ""
@@ -145,24 +162,26 @@ def guide(lang):
         rest.append(ln)
     text = "\n".join(rest)
     text = re.split(r"^## (?:Get the blueprint|Den Bauplan holen)\s*$", text, flags=re.M)[0]
-    # drop the trailing repo link paragraph; replaced by the CTA block
     body_html = md_to_html(text)
-    shots = "".join(f'<img src="{r}assets/img/{s}.webp" alt="" loading="lazy" width="270" height="480">' for s in SHOTS)
-    other_href = ("../../../projects/home-information-screen/" if lang == "de" else "../../de/projekte/home-information-screen/")
-    other_href = r + ("projects/home-information-screen/" if lang == "de" else "de/projekte/home-information-screen/")
+    other = "en" if lang == "de" else "de"
+    other_href = r + g[other]
+    llm_href = r + GUIDES["llm"][lang]
+    shots = ""
+    if g["shots"]:
+        imgs = "".join(f'<img src="{r}assets/img/{x}.webp" alt="" loading="lazy" width="270" height="480">' for x in SHOTS)
+        shots = f'<div class="shots" role="group" aria-label="Screenshots">{imgs}</div><p class="sub" style="font-size:.9rem">{t["gallery"]}</p>'
+    note = f'<p class="callout"><a href="{llm_href}">{t["llm_note"]}</a></p>' if g["note"] else ""
+    cta = (f'<div class="cta"><h2>{t["cta_h"]}</h2><p>{t["cta_p"]}</p><a class="btn" href="{BLUEPRINT}">{t["cta_b"]}</a></div>' if g["cta"] else "")
     body = f"""<div class="wrap narrow"><article>
-<p><a href="{r}{'de/' if lang=='de' else ''}#projects">← {t['home_b']}</a> · <a href="{other_href}" hreflang="{'en' if lang=='de' else 'de'}">{t['other_page']}</a></p>
+<p><a href="{r}{'de/' if lang=='de' else ''}#projects">← {t['home_b']}</a> · <a href="{other_href}" hreflang="{other}">{t['other_page']}</a></p>
 <h1>{html.escape(title)}</h1>
 <p class="sub">{html.escape(sub)}</p>
-<div class="shots" role="group" aria-label="Screenshots">{shots}</div>
-<p class="sub" style="font-size:.9rem">{t['gallery']}</p>
+{note}{shots}
 {body_html}
-<div class="cta"><h2>{t['cta_h']}</h2><p>{t['cta_p']}</p>
-<a class="btn" href="{BLUEPRINT}">{t['cta_b']}</a></div>
+{cta}
 </article></div>"""
-    alt_path = ("projects/home-information-screen/" if lang == "de" else "de/projekte/home-information-screen/")
     plain = re.sub(r"<[^>]+>", "", title)
-    return layout(lang, depth, f"{plain} – Reality Today", t["guide_desc"], body, alt_path, "")
+    return layout(lang, depth, f"{plain} – Reality Today", t[g["desc"]], body, g[other], "")
 
 def write(path, content):
     p = ROOT / path; p.parent.mkdir(parents=True, exist_ok=True)
@@ -170,8 +189,9 @@ def write(path, content):
 
 write("index.html", home("en"))
 write("de/index.html", home("de"))
-write("projects/home-information-screen/index.html", guide("en"))
-write("de/projekte/home-information-screen/index.html", guide("de"))
+for _k, _g in GUIDES.items():
+    for _l in ("en", "de"):
+        write(_g[_l] + "index.html", guide(_k, _l))
 write("404.html", layout("en", 0, "Not found – Reality Today", "Page not found",
   '<div class="wrap narrow hero"><h1>404</h1><p class="lead">This page does not exist. <a href="/">Back to the start</a> · <a href="/de/">Zur Startseite</a></p></div>', "de/", ""))
 

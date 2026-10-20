@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Which AI Model and Agent Should You Use? – Reality Today</title>
+<meta name="description" content="Choosing a model for the blueprints: why Opus-class models give the best results, where mid-tier is enough, and tips for Mistral Vibe and other agents.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Which AI Model and Agent Should You Use? – Reality Today">
+<meta property="og:description" content="Choosing a model for the blueprints: why Opus-class models give the best results, where mid-tier is enough, and tips for Mistral Vibe and other agents.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://reality-today.de/assets/img/social-preview.jpg">
+<link rel="alternate" hreflang="de" href="../../de/anleitungen/llm-auswahl/">
+<link rel="icon" type="image/png" href="../../assets/favicon.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../"><img src="../../assets/img/logo.png" alt="" width="40" height="40"><span>Reality Today</span></a>
+<nav class="site" aria-label="Main">
+<a href="../../#projects">Projects</a>
+<a class="hide-s" href="../../#approach">Approach</a>
+<a class="hide-s" href="https://github.com/realitytoday">GitHub</a>
+<a class="lang" href="../../de/anleitungen/llm-auswahl/" hreflang="de" lang="de" aria-label="Language">DE</a>
+</nav></div></header>
+<main>
+<div class="wrap narrow"><article>
+<p><a href="../../#projects">← All projects</a> · <a href="../../de/anleitungen/llm-auswahl/" hreflang="de">Deutsche Version dieser Anleitung</a></p>
+<h1>Which AI Model and Agent Should You Use?</h1>
+<p class="sub">Practical guidance for building the blueprints on this site with a coding agent.</p>
+
+<h2>Why the model matters</h2>
+<p>The prompts in my blueprints are written for a coding <strong>agent</strong>, not a chat window. The agent has to read a brief, plan changes across several files, run commands, read error messages and keep the project's rules in mind over a long session. Models differ a lot at exactly that. The same prompt can give a working backend with one model and a plausible-looking mess with another.</p>
+<p>Model names and rankings change every few months, so this page talks about classes of models, not versions. Check what is current before you start.</p>
+<h2>The short recommendation</h2>
+<p>Use the <strong>strongest frontier model you have access to</strong>: Claude Opus or a comparable top-tier model from another vendor. Spend it where mistakes are expensive: the architecture, the backend, and anything that touches hardware, Linux desktop settings or deployment. For the repetitive parts, such as UI polish, small fixes and the admin page, a mid-tier model (a Sonnet-class or similar model) is usually fine and cheaper. Smaller or open-weight models can work too, but expect to split the work into smaller steps and to check more.</p>
+<p>A rule of thumb, based on my own experience and not on a benchmark:</p>
+<table>
+<thead>
+<tr>
+<th>Part of the Home Information Screen</th>
+<th>What it demands of the model</th>
+<th>Suggested tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend and the integration pattern (cache, stale data, fallback)</td>
+<td>Consistent design across many files, discipline about constraints</td>
+<td>Top tier</td>
+</tr>
+<tr>
+<td>Integrations (calendar recurrence, presence, webhooks, sensors)</td>
+<td>Careful reading of protocols and edge cases</td>
+<td>Top or mid tier</td>
+</tr>
+<tr>
+<td>Pi setup (Wayland, touch mapping, systemd, backlight)</td>
+<td>Obscure, version-specific Linux knowledge, debugging from logs</td>
+<td>Top tier</td>
+</tr>
+<tr>
+<td>Screen UI and design system</td>
+<td>Following many small style rules at once</td>
+<td>Mid tier is often enough</td>
+</tr>
+<tr>
+<td>Motion/sleep service</td>
+<td>Small program, but a reference implementation is provided</td>
+<td>Mid tier</td>
+</tr>
+<tr>
+<td>Docker image and deployment</td>
+<td>Well-known patterns, but unforgiving</td>
+<td>Mid tier</td>
+</tr>
+<tr>
+<td>Admin page</td>
+<td>Routine forms and CRUD</td>
+<td>Mid tier</td>
+</tr>
+</tbody>
+</table>
+<h2>Tips that work with any agent</h2>
+<ul>
+<li><strong>Keep a short project brief</strong> (<code>CLAUDE.md</code> or <code>AGENTS.md</code>) with the fixed decisions: architecture, stack, security rules and design rules. The blueprint ships a template for both file names. One page that the agent reads every session beats a long wiki it ignores.</li>
+<li><strong>One prompt per session or task.</strong> Do not paste all prompts at once. Finish a piece, test it on the real device, commit, then continue.</li>
+<li><strong>Give the agent the reference files.</strong> The <code>reference/</code> folder exists because exact scripts and contracts beat descriptions.</li>
+<li><strong>Make it plan first.</strong> Ask for a short plan and read it before any code is written. Corrections are cheaper at that point.</li>
+<li><strong>Run things and feed the output back.</strong> Build, test and look at logs yourself or let the agent do it, and paste real error messages instead of describing them.</li>
+<li><strong>Commit often.</strong> If a session goes wrong, you want a clean point to return to.</li>
+<li><strong>Keep a decision log.</strong> Dated entries for decisions and mistakes. It becomes the context you can hand to a fresh session.</li>
+<li><strong>Restart long sessions.</strong> When the agent starts forgetting rules or repeating mistakes, start a new session with the brief and the decision log.</li>
+<li><strong>Do not let it weaken security to make something work.</strong> The blueprint's rule is: never turn TLS verification off.</li>
+</ul>
+<h2>Tips for Mistral Vibe and similar agents</h2>
+<p>Mistral's agent is a good choice if you prefer a European provider or want to keep options open. I have not tested these blueprints end to end with it, so treat the following as sensible starting points rather than verified results.</p>
+<ul>
+<li><strong>Check which brief file it reads</strong> (<code>AGENTS.md</code> is a common convention) and put the project brief there. The blueprint ships an <code>AGENTS.md</code>.</li>
+<li><strong>Use smaller steps.</strong> Split each blueprint prompt into sub-tasks, for example "data model and storage" first, "calendar integration" second. Give one task, one list of files, one goal.</li>
+<li><strong>Name the files and the stack explicitly.</strong> Say "Go, standard library only, one YAML file per store" in every task rather than relying on the agent to remember it.</li>
+<li><strong>Paste or point to the reference material</strong> for anything with exact behaviour, such as the Pi scripts and the API contract.</li>
+<li><strong>Ask for the plan, then review it.</strong> Weaker models more often start coding on a wrong assumption.</li>
+<li><strong>Verify more.</strong> Run the tests and the build after every step, and test on the real hardware before moving on.</li>
+<li><strong>Escalate the hard problems.</strong> If you are stuck on Wayland rotation, touch mapping or a systemd unit, give that one problem to a top-tier model, then continue with your preferred agent.</li>
+<li><strong>Keep the context small.</strong> Open a fresh session per task and reuse the brief and the decision log.</li>
+</ul>
+<h2>If something goes wrong</h2>
+<p>If the output is plausible but wrong, the cause is usually one of three things: the task was too big, a rule from the brief was lost, or the model lacked knowledge about the specific hardware or software version. Make the task smaller, restate the rule, or switch to a stronger model for that step.</p>
+
+</article></div>
+</main>
+<footer class="site"><div class="wrap">
+<span>© Reality Today · Content: CC BY 4.0 unless stated otherwise in the repos.</span>
+<span><a href="https://github.com/realitytoday">GitHub</a></span>
+</div></footer>
+</body></html>
