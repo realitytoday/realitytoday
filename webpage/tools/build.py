@@ -235,7 +235,17 @@ def guide(key, lang):
     plain = re.sub(r"<[^>]+>", "", title)
     return layout(lang, depth, f"{plain} – Reality Today", t[g["desc"]], body, g[other], "")
 
+def local_links(content):
+    """Point folder links at their index.html, so the pages also work opened from disk (file://),
+    where a browser shows a directory listing instead of the index. Web servers serve both the same."""
+    def fix(m):
+        path = m.group(2)
+        return m.group(1) + (path + "index.html" if path.endswith("/") else path) + (m.group(3) or "") + '"'
+    return re.sub(r'(<a\b[^>]*?\bhref=")((?!https?:|mailto:|#|/)[^"#]*/)(#[^"]*)?"', fix, content)
+
 def write(path, content):
+    if path != "404.html":  # the 404 page is served from any URL, it keeps its own root-relative links
+        content = local_links(content)
     p = ROOT / path; p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(content, encoding="utf-8"); print("wrote", path)
 
