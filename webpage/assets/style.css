@@ -63,3 +63,5 @@ footer.site a{color:var(--muted)}
 .callout{background:var(--card);border-left:4px solid var(--pink);border-radius:8px;padding:12px 16px;margin:18px 0}
 .callout a{font-weight:600}
 .card.guide .body{padding-top:20px}
+.card .thumb.term{height:auto;justify-content:flex-start;padding:18px}
+.card .thumb.term pre{margin:0;padding:0;background:none;color:#cfe9ff;font-size:.7rem;line-height:1.4;overflow:hidden;white-space:pre}

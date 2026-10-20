@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Whole Server Fleet in One Terminal Window: vps-fleet – Reality Today</title>
+<meta name="description" content="A keyboard-driven terminal cockpit for a fleet of Linux servers over plain SSH. Build it with an AI coding agent from the prompts, or use the finished Go code.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Your Whole Server Fleet in One Terminal Window: vps-fleet – Reality Today">
+<meta property="og:description" content="A keyboard-driven terminal cockpit for a fleet of Linux servers over plain SSH. Build it with an AI coding agent from the prompts, or use the finished Go code.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://reality-today.de/assets/img/social-preview.jpg">
+<link rel="alternate" hreflang="de" href="../../de/projekte/vps-fleet/">
+<link rel="icon" type="image/png" href="../../assets/favicon.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../"><img src="../../assets/img/logo.png" alt="" width="40" height="40"><span>Reality Today</span></a>
+<nav class="site" aria-label="Main">
+<a href="../../#projects">Projects</a>
+<a class="hide-s" href="../../#approach">Approach</a>
+<a class="hide-s" href="https://github.com/realitytoday">GitHub</a>
+<a class="lang" href="../../de/projekte/vps-fleet/" hreflang="de" lang="de" aria-label="Language">DE</a>
+</nav></div></header>
+<main>
+<div class="wrap narrow"><article>
+<p><a href="../../#projects">← All projects</a> · <a href="../../de/projekte/vps-fleet/" hreflang="de">Deutsche Version dieser Anleitung</a></p>
+<h1>Your Whole Server Fleet in One Terminal Window: vps-fleet</h1>
+<p class="sub">A blueprint and the prompts for a keyboard-driven SSH cockpit, plus the finished Go code.</p>
+
+<h2>Intro</h2>
+<p>I run a handful of small servers: a web box, a database, a VPN gateway and a few
+hobby VPS. Checking them meant one SSH tab each, and the question "is anything full,
+overloaded or waiting for a reboot?" took ten tabs and ten commands. Monitoring stacks
+answer it, but they are servers of their own that you must run, secure and update.</p>
+<p>So I built a cockpit: one terminal window that shows every server's health at a glance,
+and the same window is enough to fix what it shows. Look at the live processes, kill the
+runaway one, restart the service, move a file. It uses the SSH access you already have and
+installs <strong>nothing</strong> on the servers.</p>
+<p>I built it in a few days with AI coding agents. Unlike my other blueprints, this one comes
+in two parts: the <strong>prompts and reasoning</strong> (this guide and the blueprint repo), and the
+<strong>finished code</strong> (the code repo), so you can either use it as it is or have your agent build
+a version tuned to your own servers.</p>
+<p><strong>Time:</strong> an evening to read and try it, a weekend to build your own version.
+<strong>Skill level:</strong> comfortable with a terminal and SSH keys. The agent writes the code.
+<strong>Cost:</strong> nothing but the servers you already have.</p>
+<h2>What it does</h2>
+<ul>
+<li><strong>Fleet overview:</strong> every server with CPU, memory and disk bars, load, uptime and alerts for
+  failed services, full disks, high load, pending updates and a required reboot. Table or cards,
+  groups, live filter, sorting.</li>
+<li><strong>Dashboard:</strong> five-minute trend lines, disk and network throughput, and a live top-style
+  process list beside it.</li>
+<li><strong>Top view and kill:</strong> a full-screen process list; send any signal to any process.</li>
+<li><strong>Command runner:</strong> commands with a persistent working directory and aliases, history,
+  reverse search and tab completion of remote paths.</li>
+<li><strong>Systemd manager:</strong> list units, start, stop, restart.</li>
+<li><strong>File manager:</strong> local and remote side by side, upload and download with progress, view,
+  delete, chmod, chown, chgrp.</li>
+<li><strong>Profiles:</strong> separate server lists for work, home or customers.</li>
+</ul>
+<h2>The decisions that matter</h2>
+<p><strong>Agentless.</strong> If you can <code>ssh</code> into a server, it can be managed: no daemon, no exporter, no
+open port. The price is that every number comes from a shell command on each poll, so the
+metrics script is designed carefully: one SSH session, one prefixed line per metric, parsed by
+prefix and not by position.</p>
+<p><strong>Never trust the first <code>top</code> frame.</strong> Its CPU is averaged since the process started. The tool
+runs <code>top</code> twice and keeps the second frame, and falls back to <code>ps</code> on minimal systems like
+Alpine, where it says so.</p>
+<p><strong>Quote everything.</strong> A file called <code>$(reboot).txt</code> on a server must not run on your next
+delete. Every value that goes into a remote command, including names that came from the server
+itself, is single-quoted and preceded by <code>--</code>.</p>
+<p><strong>Verify host keys.</strong> My first version skipped the check. It was the first thing I fixed before
+publishing: the tool now remembers a server on first contact and refuses it if its key ever changes.</p>
+<h2>Build it with your agent</h2>
+<p>Start with the project brief: put <code>prompts/00-project-brief.md</code> into a new repository as
+<code>CLAUDE.md</code> or <code>AGENTS.md</code> and fill in the placeholders. Then give the agent the six prompts in
+order, one per session, and run each prompt's acceptance checks against a real server before moving on:</p>
+<ol>
+<li>Foundation and SSH: config and profiles, the SSH client, host keys, the quoting helper.</li>
+<li>Metrics and fleet overview: the metrics script, health and alerts, sorting and filtering.</li>
+<li>Dashboard and processes: trends, process list, the top view and the kill dialog.</li>
+<li>Command runner and systemd manager.</li>
+<li>The two-pane file manager.</li>
+<li>Profiles, settings and the release checklist.</li>
+</ol>
+<p>Test on at least two kinds of server (for example Debian and Alpine). Parsers that work on one
+distribution's output often break on another's.</p>
+<h2>Run the finished version</h2>
+<p>You need Go to build it. On Linux or macOS:</p>
+<pre><code class="language-sh">git clone https://github.com/realitytoday/vps-fleet-tui.git
+cd vps-fleet-tui
+go build -o vps-fleet ./cmd/vps-fleet
+./vps-fleet
+</code></pre>
+<p>On Windows the output file needs the <code>.exe</code> ending, otherwise Windows will not run it:</p>
+<pre><code class="language-powershell">go build -o vps-fleet.exe ./cmd/vps-fleet
+.\vps-fleet.exe
+</code></pre>
+<p>On first start it creates an example config in <code>~/.config/vps-fleet/</code>. Add your servers there.
+Prefer SSH keys over the <code>password</code> field, which is stored as plain text.</p>
+<h2>What is not finished</h2>
+<p>The command runner runs single commands, so it is not a full interactive terminal and programs
+like <code>vim</code> or <code>htop</code> do not work in it. Copying whole folders in the file manager is not built,
+and neither are a WireGuard plugin, a help overlay or log viewing. There is no history and no
+alerting when the window is closed: it is a cockpit, not a monitoring system. Windows servers
+are out of scope. Better to say so than to let you rely on something that does not exist.</p>
+<div class="cta"><h2>Get the blueprint and the code</h2><p>The prompts, architecture, key map and lessons learned are in the blueprint repo; the finished Go implementation is in the code repo.</p><a class="btn" href="https://github.com/realitytoday/vps-fleet">Blueprint on GitHub</a> <a class="btn alt" href="https://github.com/realitytoday/vps-fleet-tui">Code on GitHub</a></div>
+</article></div>
+</main>
+<footer class="site"><div class="wrap">
+<span>© Reality Today · Content: CC BY 4.0 unless stated otherwise in the repos.</span>
+<span><a href="https://github.com/realitytoday">GitHub</a></span>
+</div></footer>
+</body></html>

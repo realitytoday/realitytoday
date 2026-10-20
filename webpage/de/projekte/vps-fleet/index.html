@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Die ganze Server-Flotte in einem Terminalfenster: vps-fleet – Reality Today</title>
+<meta name="description" content="Ein tastaturgesteuertes Terminal-Cockpit für eine Flotte von Linux-Servern über normales SSH. Mit einem KI-Coding-Agenten aus den Prompts bauen oder den fertigen Go-Code nutzen.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Die ganze Server-Flotte in einem Terminalfenster: vps-fleet – Reality Today">
+<meta property="og:description" content="Ein tastaturgesteuertes Terminal-Cockpit für eine Flotte von Linux-Servern über normales SSH. Mit einem KI-Coding-Agenten aus den Prompts bauen oder den fertigen Go-Code nutzen.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://reality-today.de/assets/img/social-preview.jpg">
+<link rel="alternate" hreflang="en" href="../../../projects/vps-fleet/">
+<link rel="icon" type="image/png" href="../../../assets/favicon.png">
+<link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+<link rel="stylesheet" href="../../../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="../../../de/"><img src="../../../assets/img/logo.png" alt="" width="40" height="40"><span>Reality Today</span></a>
+<nav class="site" aria-label="Main">
+<a href="../../../de/#projects">Projekte</a>
+<a class="hide-s" href="../../../de/#approach">Ansatz</a>
+<a class="hide-s" href="https://github.com/realitytoday">GitHub</a>
+<a class="lang" href="../../../projects/vps-fleet/" hreflang="en" lang="en" aria-label="Sprache">EN</a>
+</nav></div></header>
+<main>
+<div class="wrap narrow"><article>
+<p><a href="../../../de/#projects">← Alle Projekte</a> · <a href="../../../projects/vps-fleet/" hreflang="en">English version of this guide</a></p>
+<h1>Die ganze Server-Flotte in einem Terminalfenster: vps-fleet</h1>
+<p class="sub">Ein Bauplan samt Prompts für ein tastaturgesteuertes SSH-Cockpit, dazu der fertige Go-Code.</p>
+
+<h2>Einleitung</h2>
+<p>Ich betreibe ein paar kleine Server: eine Web-Maschine, eine Datenbank, ein VPN-Gateway
+und einige Hobby-VPS. Sie zu prüfen hieß ein SSH-Tab pro Server, und die Frage "ist irgendwo
+etwas voll, überlastet oder wartet auf einen Neustart?" kostete zehn Tabs und zehn Befehle.
+Monitoring-Stacks beantworten sie, sind aber selbst Server, die man betreiben, absichern und
+aktualisieren muss.</p>
+<p>Also habe ich ein Cockpit gebaut: ein Terminalfenster, das die Gesundheit jedes Servers auf
+einen Blick zeigt, und dasselbe Fenster reicht, um zu beheben, was es zeigt. Laufende Prozesse
+ansehen, den Ausreißer beenden, den Dienst neu starten, eine Datei verschieben. Es nutzt den
+SSH-Zugang, den du schon hast, und installiert <strong>nichts</strong> auf den Servern.</p>
+<p>Gebaut in wenigen Tagen mit KI-Coding-Agenten. Anders als meine anderen Blueprints besteht dieses
+aus zwei Teilen: den <strong>Prompts und Begründungen</strong> (diese Anleitung und das Blueprint-Repo) und dem
+<strong>fertigen Code</strong> (das Code-Repo). Du kannst es also so nutzen, wie es ist, oder deinen Agenten eine
+Version bauen lassen, die zu deinen eigenen Servern passt.</p>
+<p><strong>Zeit:</strong> ein Abend zum Lesen und Ausprobieren, ein Wochenende für die eigene Version.
+<strong>Niveau:</strong> Terminal und SSH-Schlüssel sollten vertraut sein. Den Code schreibt der Agent.
+<strong>Kosten:</strong> nichts außer den Servern, die du schon hast.</p>
+<h2>Was es kann</h2>
+<ul>
+<li><strong>Flottenübersicht:</strong> jeder Server mit CPU-, Speicher- und Platten-Balken, Last, Laufzeit und
+  Warnungen für ausgefallene Dienste, volle Platten, hohe Last, ausstehende Updates und nötigen
+  Neustart. Tabelle oder Karten, Gruppen, Live-Filter, Sortierung.</li>
+<li><strong>Dashboard:</strong> Trendlinien über fünf Minuten, Platten- und Netzwerkdurchsatz und daneben eine
+  Live-Prozessliste im top-Stil.</li>
+<li><strong>Top-Ansicht und Kill:</strong> eine Vollbild-Prozessliste; jedes Signal an jeden Prozess senden.</li>
+<li><strong>Befehls-Runner:</strong> Befehle mit bleibendem Arbeitsverzeichnis und Aliasen, Verlauf, Rückwärtssuche
+  und Tab-Vervollständigung von Remote-Pfaden.</li>
+<li><strong>Systemd-Manager:</strong> Units auflisten, starten, stoppen, neu starten.</li>
+<li><strong>Dateimanager:</strong> lokal und Server nebeneinander, Hoch- und Herunterladen mit Fortschritt, Ansehen,
+  Löschen, chmod, chown, chgrp.</li>
+<li><strong>Profile:</strong> getrennte Serverlisten für Arbeit, Zuhause oder Kunden.</li>
+</ul>
+<h2>Die Entscheidungen, auf die es ankommt</h2>
+<p><strong>Agentenlos.</strong> Wenn du dich per <code>ssh</code> einloggen kannst, lässt sich der Server verwalten: kein Daemon,
+kein Exporter, kein offener Port. Der Preis: Jede Zahl stammt bei jeder Abfrage aus einem Shell-Befehl.
+Das Metrik-Skript ist deshalb sorgfältig entworfen: eine SSH-Sitzung, eine Zeile mit Präfix pro Metrik,
+ausgewertet nach Präfix statt nach Position.</p>
+<p><strong>Dem ersten <code>top</code>-Bild nie trauen.</strong> Seine CPU-Werte sind seit dem Prozessstart gemittelt. Das Werkzeug
+ruft <code>top</code> zweimal auf und behält das zweite Bild. Auf minimalen Systemen wie Alpine fällt es auf <code>ps</code>
+zurück und sagt das auch.</p>
+<p><strong>Alles quoten.</strong> Eine Datei namens <code>$(reboot).txt</code> auf einem Server darf beim nächsten Löschen nichts
+ausführen. Jeder Wert in einem Remote-Befehl, auch Namen, die vom Server selbst kamen, steht in einfachen
+Anführungszeichen mit vorangestelltem <code>--</code>.</p>
+<p><strong>Host-Keys prüfen.</strong> Meine erste Version hat die Prüfung übersprungen. Das war das Erste, was ich vor
+der Veröffentlichung korrigiert habe: Das Werkzeug merkt sich einen Server beim ersten Kontakt und lehnt
+ihn ab, wenn sich sein Schlüssel jemals ändert.</p>
+<h2>Mit dem Agenten bauen</h2>
+<p>Beginne mit dem Projekt-Brief: Lege <code>prompts/00-project-brief.md</code> als <code>CLAUDE.md</code> oder <code>AGENTS.md</code> in ein
+neues Repository und fülle die Platzhalter aus. Gib dem Agenten dann die sechs Prompts der Reihe nach,
+einen pro Sitzung, und prüfe jeweils die Abnahmekriterien an einem echten Server, bevor du weitermachst:</p>
+<ol>
+<li>Fundament und SSH: Konfiguration und Profile, SSH-Client, Host-Keys, Quoting-Helfer.</li>
+<li>Metriken und Flottenübersicht: Metrik-Skript, Zustand und Warnungen, Sortieren und Filtern.</li>
+<li>Dashboard und Prozesse: Trends, Prozessliste, Top-Ansicht und Kill-Dialog.</li>
+<li>Befehls-Runner und Systemd-Manager.</li>
+<li>Der Zwei-Fenster-Dateimanager.</li>
+<li>Profile, Einstellungen und die Checkliste für die Veröffentlichung.</li>
+</ol>
+<p>Teste mit mindestens zwei Arten von Servern (zum Beispiel Debian und Alpine). Parser, die bei einer
+Distribution funktionieren, brechen bei einer anderen oft.</p>
+<h2>Die fertige Version starten</h2>
+<p>Zum Bauen brauchst du Go. Unter Linux oder macOS:</p>
+<pre><code class="language-sh">git clone https://github.com/realitytoday/vps-fleet-tui.git
+cd vps-fleet-tui
+go build -o vps-fleet ./cmd/vps-fleet
+./vps-fleet
+</code></pre>
+<p>Unter Windows braucht die Ausgabedatei die Endung <code>.exe</code>, sonst führt Windows sie nicht aus:</p>
+<pre><code class="language-powershell">go build -o vps-fleet.exe ./cmd/vps-fleet
+.\vps-fleet.exe
+</code></pre>
+<p>Beim ersten Start legt es eine Beispielkonfiguration in <code>~/.config/vps-fleet/</code> an. Trage dort deine
+Server ein. Nimm lieber SSH-Schlüssel als das Feld <code>password</code>, das im Klartext gespeichert wird.</p>
+<h2>Was noch fehlt</h2>
+<p>Der Befehls-Runner führt einzelne Befehle aus, ist also kein vollwertiges interaktives Terminal; Programme
+wie <code>vim</code> oder <code>htop</code> laufen darin nicht. Ganze Ordner kopieren kann der Dateimanager noch nicht, und ein
+WireGuard-Plugin, eine Hilfe-Ansicht und das Anzeigen von Logs gibt es auch nicht. Es gibt keinen Verlauf
+und keine Alarmierung, wenn das Fenster geschlossen ist: ein Cockpit, kein Monitoring-System. Windows-Server
+sind nicht vorgesehen. Besser, das zu sagen, als dich auf etwas bauen zu lassen, das es nicht gibt.</p>
+<div class="cta"><h2>Bauplan und Code holen</h2><p>Prompts, Architektur, Tastenbelegung und Lessons Learned liegen im Blueprint-Repo, die fertige Go-Implementierung im Code-Repo.</p><a class="btn" href="https://github.com/realitytoday/vps-fleet">Blueprint auf GitHub</a> <a class="btn alt" href="https://github.com/realitytoday/vps-fleet-tui">Code auf GitHub</a></div>
+</article></div>
+</main>
+<footer class="site"><div class="wrap">
+<span>© Reality Today · Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.</span>
+<span><a href="https://github.com/realitytoday">GitHub</a></span>
+</div></footer>
+</body></html>

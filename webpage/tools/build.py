@@ -8,6 +8,9 @@ import markdown
 ROOT = Path(__file__).resolve().parent.parent
 BLUEPRINT = "https://github.com/realitytoday/home-information-screen-blueprint"
 GITHUB = "https://github.com/realitytoday"
+VF_BLUEPRINT = "https://github.com/realitytoday/vps-fleet"
+VF_CODE = "https://github.com/realitytoday/vps-fleet-tui"
+VF_PREVIEW = "  vps-fleet v0.1.0 · default      2 servers · 2 online\n  NAME     STATUS    CPU        MEM        DISK\n ▌web-1    ● online  ████░ 82%  █████ 97%  █░░░░ 23%\n  db-1     ● online  █░░░░ 12%  ██░░░ 41%  ███░░ 60%"
 SHOTS = ["screen-idle", "screen-calendar", "screen-order-dialog", "screen-weather",
          "screen-tasks", "screen-orders", "screen-sensors", "screen-notes"]
 
@@ -34,6 +37,11 @@ L = {
   guide_desc="Build a calm wall dashboard with a Raspberry Pi, a touchscreen and an AI coding agent. A blueprint and the prompts, no code to download.",
   llm_t="Which AI model and agent?", llm_p="Choosing a model for the blueprints: why Opus-class models give the best results, where mid-tier is enough, and tips for Mistral Vibe and other agents.",
   llm_tags=["Claude Opus","Mistral Vibe","Agent tips"], llm_note="Not every model can do the same. Read which AI model and agent to use before you start.",
+  vf_t="vps-fleet", vf_p="Your whole server fleet in one terminal window: health, processes, services and files for all your servers over plain SSH, with nothing installed on them. The prompts plus the finished Go code.",
+  vf_tags=["Go","SSH","Terminal UI","AI agents"], vf_path="projects/vps-fleet/",
+  vf_desc="A keyboard-driven terminal cockpit for a fleet of Linux servers over plain SSH. Build it with an AI coding agent from the prompts, or use the finished Go code.",
+  vf_cta_h="Get the blueprint and the code", vf_cta_p="The prompts, architecture, key map and lessons learned are in the blueprint repo; the finished Go implementation is in the code repo.",
+  vf_cta_b="Blueprint on GitHub", vf_code_b="Code on GitHub",
   llm_h="Guide", contact="Contact", license="Content: CC BY 4.0 unless stated otherwise in the repos.", aria="Language"),
  "de": dict(
   lang="de", home="/de/", other="/", other_label="EN", projects="Projekte", about="Ansatz",
@@ -57,6 +65,11 @@ L = {
   guide_desc="Ein ruhiges Wand-Dashboard mit Raspberry Pi, Touchscreen und KI-Coding-Agent bauen. Bauplan und Prompts, kein Code zum Herunterladen.",
   llm_t="Welches KI-Modell und welcher Agent?", llm_p="Modellwahl für die Blueprints: warum Opus-Klasse die besten Ergebnisse liefert, wo die Mittelklasse reicht, und Tipps für Mistral Vibe und andere Agenten.",
   llm_tags=["Claude Opus","Mistral Vibe","Agent-Tipps"], llm_note="Nicht jedes Modell kann dasselbe. Lies vor dem Start, welches KI-Modell und welcher Agent geeignet ist.",
+  vf_t="vps-fleet", vf_p="Die ganze Server-Flotte in einem Terminalfenster: Zustand, Prozesse, Dienste und Dateien aller Server über normales SSH, ohne etwas auf ihnen zu installieren. Die Prompts und dazu der fertige Go-Code.",
+  vf_tags=["Go","SSH","Terminal-UI","KI-Agenten"], vf_path="projekte/vps-fleet/",
+  vf_desc="Ein tastaturgesteuertes Terminal-Cockpit für eine Flotte von Linux-Servern über normales SSH. Mit einem KI-Coding-Agenten aus den Prompts bauen oder den fertigen Go-Code nutzen.",
+  vf_cta_h="Bauplan und Code holen", vf_cta_p="Prompts, Architektur, Tastenbelegung und Lessons Learned liegen im Blueprint-Repo, die fertige Go-Implementierung im Code-Repo.",
+  vf_cta_b="Blueprint auf GitHub", vf_code_b="Code auf GitHub",
   llm_h="Anleitung", contact="Kontakt", license="Inhalte: CC BY 4.0, sofern in den Repos nicht anders angegeben.", aria="Sprache"),
 }
 
@@ -108,6 +121,8 @@ def home(lang):
     thumbs = "".join(f'<img src="{r}assets/img/{s}.webp" alt="" loading="lazy">' for s in SHOTS[:3])
     tags = "".join(f"<span>{x}</span>" for x in t["tags"])
     llm_href = (r + "guides/choosing-an-llm/") if lang == "en" else "anleitungen/llm-auswahl/"
+    vf_href = (r + t["vf_path"]) if lang == "en" else t["vf_path"]
+    vf_tags = "".join(f"<span>{x}</span>" for x in t["vf_tags"])
     body = f"""<section class="hero"><div class="wrap">
 <h1>{t['h1']}</h1>
 <p class="lead">{t['lead']}</p>
@@ -119,6 +134,8 @@ def home(lang):
 <div class="grid">
 <a class="card" href="{proj}"><div class="thumb">{thumbs}</div><div class="body">
 <h3>{t['card_t']}</h3><p>{t['card_p']}</p><div class="tags">{tags}</div></div></a>
+<a class="card" href="{vf_href}"><div class="thumb term"><pre>{html.escape(VF_PREVIEW)}</pre></div><div class="body">
+<h3>{t['vf_t']}</h3><p>{t['vf_p']}</p><div class="tags">{vf_tags}</div></div></a>
 <a class="card guide" href="{llm_href}"><div class="body" style="border-top:6px solid var(--pink)">
 <h3>{t['llm_t']}</h3><p>{t['llm_p']}</p><div class="tags">{''.join(f"<span>{x}</span>" for x in t['llm_tags'])}</div></div></a>
 <div class="card soon"><div><h3>{t['soon_t']}</h3><p>{t['soon_p']}</p></div></div>
@@ -138,6 +155,9 @@ GUIDES = {
  "his": {"en": "projects/home-information-screen/", "de": "de/projekte/home-information-screen/",
          "src": "home-information-screen", "shots": True, "cta": True, "note": True,
          "desc": "guide_desc", "back": "projects"},
+ "vf": {"en": "projects/vps-fleet/", "de": "de/projekte/vps-fleet/",
+        "src": "vps-fleet", "shots": False, "cta": True, "note": False,
+        "desc": "vf_desc", "back": "projects"},
  "llm": {"en": "guides/choosing-an-llm/", "de": "de/anleitungen/llm-auswahl/",
          "src": "llm-guidance", "shots": False, "cta": False, "note": False,
          "desc": "llm_p", "back": "projects"},
@@ -171,7 +191,10 @@ def guide(key, lang):
         imgs = "".join(f'<img src="{r}assets/img/{x}.webp" alt="" loading="lazy" width="270" height="480">' for x in SHOTS)
         shots = f'<div class="shots" role="group" aria-label="Screenshots">{imgs}</div><p class="sub" style="font-size:.9rem">{t["gallery"]}</p>'
     note = f'<p class="callout"><a href="{llm_href}">{t["llm_note"]}</a></p>' if g["note"] else ""
-    cta = (f'<div class="cta"><h2>{t["cta_h"]}</h2><p>{t["cta_p"]}</p><a class="btn" href="{BLUEPRINT}">{t["cta_b"]}</a></div>' if g["cta"] else "")
+    if key == "vf":
+        cta = f'<div class="cta"><h2>{t["vf_cta_h"]}</h2><p>{t["vf_cta_p"]}</p><a class="btn" href="{VF_BLUEPRINT}">{t["vf_cta_b"]}</a> <a class="btn alt" href="{VF_CODE}">{t["vf_code_b"]}</a></div>'
+    else:
+        cta = (f'<div class="cta"><h2>{t["cta_h"]}</h2><p>{t["cta_p"]}</p><a class="btn" href="{BLUEPRINT}">{t["cta_b"]}</a></div>' if g["cta"] else "")
     body = f"""<div class="wrap narrow"><article>
 <p><a href="{r}{'de/' if lang=='de' else ''}#projects">← {t['home_b']}</a> · <a href="{other_href}" hreflang="{other}">{t['other_page']}</a></p>
 <h1>{html.escape(title)}</h1>

@@ -8,6 +8,14 @@ What you find here are recent projects or renewals of old projects which were re
 
 In the repos you will find information and prompts you can provide to Anthropic Claude, GitHub Copilot, JetBrains Junie, Mistral Vibe, ... and build your own instance from it. Why? Since I strongly believe this will be the new reality or the new normal.
 
+## Projects
+
+- **[home-information-screen-blueprint](https://github.com/realitytoday/home-information-screen-blueprint)**: a calm wall dashboard for the family on a Raspberry Pi (calendar, weather, who is home, chores, sensors, sticky notes). A blueprint with prompts, no application code.
+- **[vps-fleet](https://github.com/realitytoday/vps-fleet)**: the blueprint and prompts for a keyboard-driven terminal cockpit that manages a whole fleet of Linux servers over plain SSH, with nothing installed on them.
+- **[vps-fleet-tui](https://github.com/realitytoday/vps-fleet-tui)**: the finished Go implementation of vps-fleet. Use it as it is, or build your own version from the prompts.
+
+Guides and the website: <https://reality-today.de>
+
 <!--
 **realitytoday/realitytoday** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
