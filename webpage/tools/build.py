@@ -8,7 +8,7 @@ import markdown
 ROOT = Path(__file__).resolve().parent.parent
 BLUEPRINT = "https://github.com/realitytoday/home-information-screen-blueprint"
 GITHUB = "https://github.com/realitytoday"
-BASE = "https://www.reality-today.de/"
+BASE = "https://realitytoday.github.io/"
 SOCIAL_IMG = BASE + "assets/img/social-preview.jpg"
 VF_BLUEPRINT = "https://github.com/realitytoday/vps-fleet"
 VF_CODE = "https://github.com/realitytoday/vps-fleet-tui"
@@ -312,5 +312,4 @@ for en_p, de_p in pairs:
 (ROOT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     + "\n".join(urls) + "\n</urlset>\n", encoding="utf-8")
 (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n", encoding="utf-8")
-(ROOT / "CNAME").write_text("www.reality-today.de\n", encoding="utf-8")
-print("wrote sitemap.xml, robots.txt, CNAME")
+print("wrote sitemap.xml, robots.txt")
